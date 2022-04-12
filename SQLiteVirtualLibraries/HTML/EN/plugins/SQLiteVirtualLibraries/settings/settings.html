@@ -1,0 +1,115 @@
+[% page = "PLUGIN_SQLITEVIRTUALLIBRARIES" %]
+[% PROCESS settings/header.html %]
+
+[% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED_DESC" %]
+	<input name="pref_vlstempdisabled" id="vlstempdisabled" type="checkbox" [% IF prefs.vlstempdisabled %] checked [% END %]>
+[% END %]
+<br>
+
+[% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC" %]
+	<input type="text" class="stdedit selectFolder" name="pref_sqldefdirparentfolderpath" id="sqldefdirparentfolderpath" value="[% prefs.sqldefdirparentfolderpath %]" size="40">
+[% END %]
+<br>
+
+[% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME_DESC" %]
+	<input type="text" class="stdedit" name="pref_browsemenus_parentfoldername" id="browsemenus_parentfoldername" value="[% prefs.browsemenus_parentfoldername %]" size="30" autocomplete="off">
+[% END %]
+<br>
+
+[% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_DESC" %]
+	<select name="pref_browsemenus_parentfoldericon" id="browsemenus_parentfoldericon">
+		[% FOREACH option = {
+			'0' => 'PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_MUSIC',
+			'1' => 'PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_PLAYLISTS',
+			'2' => 'PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_FOLDER',
+		} %]
+			<option [% IF prefs.browsemenus_parentfoldericon == option.key %]selected='selected' [% END %]value="[% option.key %]">[% option.value | string %]</option>
+		[%- END -%]
+	</select>
+[% END %]
+<br><br><br>
+
+<table class="sqlitevirtuallibraries-table">
+	<colgroup span="3">
+		<col class="sqlitevirtuallibraries-col-1"/>
+		<col class="sqlitevirtuallibraries-col-23"/>
+		<col class="sqlitevirtuallibraries-col-23"/>
+	</colgroup>
+	<colgroup class="sqlitevirtuallibraries-col-456" span="3"></colgroup>
+	<tr>
+		<th colspan="3" scope="colgroup"></th>
+		<th colspan="3" scope="colgroup" class="colspanoptional">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_TABLECOL_OPTIONAL" | string %]</th>
+	</tr>
+	<tr style="height:4px;" colspan="6"></tr>
+	<tr>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_ENABLED" | string %]</th>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_SQLITEDEF" | string %]</th>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_DISPLAYSTRING" | string %]</th>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ARTISTSMENUS" | string %]</th>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMSMENUS" | string %]</th>
+		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MISCMENUS" | string %]</th>
+	</tr>
+	<tr style="height:4px;" colspan="6"></tr>
+
+	[% FOREACH virtuallibrariesconfig = virtuallibrariesmatrix; idx = loop.count %]
+	<tr>
+		<input type="text" style="display:none;" class="stdedit" name="pref_idNum_[% idx %]" id="idNum" value="[% idx %]" size="1" readonly>
+		<td>
+			<input name="pref_enabled_[% idx %]" id="enabled_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.enabled %] checked [% END %]>
+		</td>
+		<td>
+			<select name="pref_sqlitedefid_[% idx %]" id="sqlitedefid_[% idx %]">
+				[% FOREACH library = allvirtuallibraries %]
+					<option value="[% library.id %]" [% IF virtuallibrariesconfig.sqlitedefid == library.id %]selected='selected'[% END %]>[% library.name %]</option>
+				[% END %]
+			</select>
+		</td>
+		<td>
+			<input type="text" class="stdedit" name="pref_browsemenu_name_[% idx %]" id="browsemenu_name_[% idx %]" value="[% virtuallibrariesconfig.browsemenu_name %]" size="25" autocomplete="off">
+		</td>
+		<td>
+			<div class="checkboxlist list_artists">
+				<input name="pref_browsemenu_contributor_allartists_[% idx %]" id="browsemenu_contributor_allartists_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_allartists %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_ALLARTISTS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_contributor_albumartists_[% idx %]" id="browsemenu_contributor_albumartists_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_albumartists %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_ALBUMARTISTS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_contributor_composers_[% idx %]" id="browsemenu_contributor_composers_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_composers %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_COMPOSERS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_contributor_conductors_[% idx %]" id="browsemenu_contributor_conductors_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_conductors %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_CONDUCTORS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_contributor_trackartists_[% idx %]" id="browsemenu_contributor_trackartists_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_trackartists %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_TRACKARTISTS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_contributor_bands_[% idx %]" id="browsemenu_contributor_bands_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_contributor_bands %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_BANDS" | string %]<br>
+			</div>
+		</td>
+		<td>
+			<div class="checkboxlist list_albums">
+				<input name="pref_browsemenu_albums_all_[% idx %]" id="browsemenu_albums_all_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_albums_all %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_ALL" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_albums_nocompis_[% idx %]" id="browsemenu_albums_nocompis_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_albums_nocompis %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_NOCOMPIS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_albums_compisonly_[% idx %]" id="browsemenu_albums_compisonly_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_albums_compisonly %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_COMPIS_ONLY" | string %]<br>
+			</div>
+		</td>
+		<td>
+			<div class="checkboxlist list_misc">
+				<input name="pref_browsemenu_genres_[% idx %]" id="browsemenu_genres_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_genres %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_GENRES" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_years_[% idx %]" id="browsemenu_years_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_years %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_YEARS" | string %]<br><div class="spacer"></div>
+				<input name="pref_browsemenu_tracks_[% idx %]" id="browsemenu_tracks_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_tracks %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_TRACKS" | string %]<br>
+			</div>
+		</td>
+	</tr>
+	<tr style="height:4px;" colspan="6"></tr>
+	[% END %]
+</table>
+<br><hr><br>
+[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT" | string %]
+
+[% PROCESS settings/footer.html %]
+<style type="text/css">
+	.sqlitevirtuallibraries-table {padding-left:20px;}
+	.sqlitevirtuallibraries-col-1 {text-align:center; width: 3em;}
+	.sqlitevirtuallibraries-col-23 {text-align:center; width: 16em;}
+	.sqlitevirtuallibraries-col-456 {text-align:left; width: 16em;}
+	.sqlitevirtuallibraries-table td, .sqlitevirtuallibraries-table th {text-align:center; padding: 0.15em 0.25em 0.15em 0;}
+	.sqlitevirtuallibraries-table th {font-weight:bold;}
+	.checkboxlist {text-align:left;}
+	.list_artists {width:90px; margin-left:30%;}
+	.list_albums {width:160px; margin-left:16%;}
+	.list_misc {width:100px; margin-left:35%;}
+	.spacer {height:3px;}
+	.colspanoptional {border-bottom: 1px solid;}
+</style>

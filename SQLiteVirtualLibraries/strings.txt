@@ -1,0 +1,122 @@
+PLUGIN_SQLITEVIRTUALLIBRARIES
+	EN	SQLite Virtual Libraries
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_DESC
+	EN	Use custom SQLite definitions to create virtual libraries and choose from a number of basic browse menus for your virtual library.
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_LOG_DESC
+	EN	Log of plugin SQLite Virtual Libraries
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS
+	EN	Browse menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED
+	EN	Temporarily disable <i>all</i> virtual libraries<br>and browse menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED_DESC
+	EN	Use this to <i>temporary</i> disable <b>all</b> virtual libraries and browse menus listed here in one go. This way you won't have to disable every single one of them. Good for troubleshooting because disabling menus/virtual libraries reduces LMS start time.
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_PREDEFINED
+	EN	Predefined browse menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_TABLECOL_OPTIONAL
+	EN	Optional
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_ENABLED
+	EN	Enabled
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_SQLITEDEF
+	EN	SQLite definition
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_DISPLAYSTRING
+	EN	Menu Name
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ARTISTSMENUS
+	EN	Artist Menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMSMENUS
+	EN	Album Menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MISCMENUS
+	EN	Other Menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_ALLARTISTS
+	EN	Artists
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MENUDISPLAYNAME_CONTIBUTOR_ALLARTISTS
+	EN	Artists
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_ALBUMARTISTS
+	EN	Album artists
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_COMPOSERS
+	EN	Composers
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_CONDUCTORS
+	EN	Conductors
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_TRACKARTISTS
+	EN	Track artists
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_CONTIBUTOR_BANDS
+	EN	Bands
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_ALL
+	EN	<b>All</b> albums
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MENUDISPLAYNAME_ALBUMS_ALL
+	EN	All albums
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_NOCOMPIS
+	EN	Albums without compilations
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ALBUMS_COMPIS_ONLY
+	EN	Compilations only
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_GENRES
+	EN	Genres
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_YEARS
+	EN	Years
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MENUDISPLAYNAME_YEARS
+	EN	Years
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_TRACKS
+	EN	Tracks
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS
+	EN	No virtual library definitions found
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_REMOVE
+	EN	Remove
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME
+	EN	Name of home menu item<br>for browse menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME_DESC
+	EN	Sets the name of the home menu item/folder that contains the menus you've enabled in the <b>Browse Menus</b> settings section.
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON
+	EN	Icon of home menu item<br>for browse menus
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_DESC
+	EN	Choose a different icon for the home menu item (parent folder) that contains the menus you've enabled in the <b>Browse Menus</b> settings section.
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_PLAYLISTS
+	EN	Playlists icon
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_MUSIC
+	EN	Music icon
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_FOLDER
+	EN	Folder icon
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT
+	EN	Use your own SQLite definition to create virtual libraries and choose from a number of basic menus to browse these virtual libraries.</b><br><br><b>Notes:</b><br><br>- <b>The more virtual libraries you add and the more tracks they contain the more time LMS will need to start or to rebuild your virtual libraries.</b><br>- You <b>don't have to</b> use <i>browse menus</i>. You can just create virtual libraries / library views <b>without</b> any menus.<br>- To <b>delete</b> a virtual library and its menus just <i>select <b>remove</b> as SQLite definition</i> and press <i>apply</i></b>. Or you could just <b>disable</b> them and keep them for later use by unchecking the <i>Enabled</i> box.<br>- Valid <b>menu names</b> can't include special characters like <b>^{}$@<>"#%?*:/|\</b><br>- Your SQLite definition should have a virtual library name and a SQLite statement.<br>- Put your SQLite definitions (file extension: <b>.sql.xml</b>) in the folder named <b>SVLS-VirtualLibrary-definitions</b> which is created in the LMS playlist folder by default. You can change its locations by selecting a different <b>parent</b> folder above.<br><br>Here's an example of a SQLite definition for a virtual library that includes all genres with 'Classical' in their genre names:<br><br>-- VirtualLibraryName: All Classical Genres<br>insert or ignore into library_track (library, track)<br>select '%s', tracks.id from tracks<br>&nbsp;&nbsp;left join genre_track on genre_track.track = tracks.id<br>&nbsp;&nbsp;join genres on genres.id = genre_track.genre<br>&nbsp;&nbsp;where<br>&nbsp;&nbsp;&nbsp;&nbsp;genres.name like '%%Classical%%'<br>&nbsp;&nbsp;&nbsp;&nbsp;and tracks.audio = 1<br>&nbsp;&nbsp;group by tracks.id<br><br><br>
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH
+	EN	<u>Parent</u> folder path for folder <wbr>with&nbsp;virtual&nbsp;library&nbsp;SQLite&nbsp;definitions
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC
+	EN	Choose a location for the folder where you put your files with the SQLite virtual library definitions. If changing it gives you problems confirm that you've moved your SQLite definition files to the <b>new</b> folder and maybe try a LMS restart.
