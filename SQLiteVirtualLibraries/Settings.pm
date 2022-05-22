@@ -176,7 +176,7 @@ sub handler {
 
 	@virtuallibrariesconfiglistsortedDefaultVLIBsDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled if scalar @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled > 0;
 
-	@virtuallibrariesconfiglistsortedDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDisabled if scalar @virtuallibrariesconfiglistsortedDefaultVLIBs > 0;
+	@virtuallibrariesconfiglistsortedDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDisabled if scalar @virtuallibrariesconfiglistsortedDisabled > 0;
 
 	my @pagevirtuallibrariesconfiglistsorted = (@virtuallibrariesconfiglistsortedDefaultVLIBs, @virtuallibrariesconfiglistsorted, @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled, @virtuallibrariesconfiglistsortedDisabled);
 
