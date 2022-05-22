@@ -1,4 +1,5 @@
-#					SQLiteVirtualLibraries plugin
+#
+# SQLite Virtual Libraries
 #
 # (c) 2022 AF
 #
@@ -44,7 +45,7 @@ sub page {
 }
 
 sub prefs {
-	return ($prefs, qw(vlstempdisabled browsemenus_parentfoldername browsemenus_parentfoldericon sqldefdirparentfolderpath));
+	return ($prefs, qw(vlstempdisabled browsemenus_parentfoldername browsemenus_parentfoldericon sqlcustomvldefdir_parentfolderpath compisrandom_genreexcludelist));
 }
 
 sub handler {
@@ -53,17 +54,19 @@ sub handler {
 	my $maxItemNum = 40;
 
 	if ($paramRef->{saveSettings}) {
-		my %virtuallibrariesmatrix;
+		my %virtuallibrariesmatrix = ();
+		my $VLibDefList = Plugins::SQLiteVirtualLibraries::Plugin::getVLibDefList();
 		my %sqlitedefDone;
 		my %browsemenu_nameDone;
-		my $VLibDefList = Plugins::SQLiteVirtualLibraries::Plugin::getVLibDefList();
 
 		for (my $n = 0; $n <= $maxItemNum; $n++) {
 			my $num_menus_enabled = 0;
 			my $virtuallibrariesconfigID = $paramRef->{"pref_idNum_$n"};
+			$log->debug('virtuallibrariesconfigID = '.Dumper($virtuallibrariesconfigID));
 			next if (!defined $virtuallibrariesconfigID);
 			my $enabled = $paramRef->{"pref_enabled_$n"} // undef;
 			my $sqlitedefid = $paramRef->{"pref_sqlitedefid_$n"} // undef;
+			$log->debug('sqlitedefid = '.Dumper($sqlitedefid));
 			next if (!$sqlitedefid || ($sqlitedefid eq '') || ($sqlitedefid eq 'none'));
 			my $browsemenu_name = trim_leadtail($paramRef->{"pref_browsemenu_name_$n"} // '');
 			if (($browsemenu_name eq '') || ($browsemenu_name =~ m|[\^{}$@<>"#%?*:/\|\\]|)) {
@@ -81,6 +84,8 @@ sub handler {
 			my $browsemenu_genres = $paramRef->{"pref_browsemenu_genres_$n"} // undef;
 			my $browsemenu_years = $paramRef->{"pref_browsemenu_years_$n"} // undef;
 			my $browsemenu_tracks = $paramRef->{"pref_browsemenu_tracks_$n"} // undef;
+			my $notUserConfigurable = $VLibDefList->{$sqlitedefid}->{'notuserconfigurable'} // undef;
+			my $defaultVLIBdef = $VLibDefList->{$sqlitedefid}->{'defaultvlibdef'} // undef;
 
 			for ($browsemenu_contributor_allartists, $browsemenu_contributor_albumartists, $browsemenu_contributor_composers, $browsemenu_contributor_conductors, $browsemenu_contributor_trackartists, $browsemenu_contributor_bands, $browsemenu_albums_all, $browsemenu_albums_nocompis, $browsemenu_albums_compisonly, $browsemenu_genres, $browsemenu_years, $browsemenu_tracks) {
 			$num_menus_enabled++ if defined;
@@ -104,6 +109,8 @@ sub handler {
 					'browsemenu_genres' => $browsemenu_genres,
 					'browsemenu_years' => $browsemenu_years,
 					'browsemenu_tracks' => $browsemenu_tracks,
+					'notuserconfigurable' => $notUserConfigurable,
+					'defaultvlibdef' => $defaultVLIBdef
 			};
 
 				$sqlitedefDone{$sqlitedefid} = 1;
@@ -120,7 +127,6 @@ sub handler {
 	# push to settings page
 
 	my $virtuallibrariesmatrix = $prefs->get('virtuallibrariesmatrix');
-	my $VLibDefList = Plugins::SQLiteVirtualLibraries::Plugin::getVLibDefList();
 	my $virtuallibrariesconfiglist;
 	foreach my $virtuallibrariesconfig (sort keys %{$virtuallibrariesmatrix}) {
 		$log->debug('virtuallibrariesconfig = '.$virtuallibrariesconfig);
@@ -143,24 +149,40 @@ sub handler {
 			'browsemenu_genres' => $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'browsemenu_genres'},
 			'browsemenu_years' => $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'browsemenu_years'},
 			'browsemenu_tracks' => $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'browsemenu_tracks'},
+			'notuserconfigurable' => $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'notuserconfigurable'},
+			'defaultvlibdef' => $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'defaultvlibdef'}
 		});
 	}
 
-	my (@virtuallibrariesconfiglistsorted, @virtuallibrariesconfiglistsortedDisabled);
+	my (@virtuallibrariesconfiglistsortedDefaultVLIBs, @virtuallibrariesconfiglistsorted, @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled, @virtuallibrariesconfiglistsortedDisabled);
 	foreach my $thisconfig (@{$virtuallibrariesconfiglist}) {
-		if (defined $thisconfig->{enabled}) {
-			push @virtuallibrariesconfiglistsorted, $thisconfig;
+		if (defined $thisconfig->{'enabled'}) {
+			if ($thisconfig->{'defaultvlibdef'}) {
+				push @virtuallibrariesconfiglistsortedDefaultVLIBs, $thisconfig;
+			} else {
+				push @virtuallibrariesconfiglistsorted, $thisconfig;
+			}
 		} else {
-			push @virtuallibrariesconfiglistsortedDisabled, $thisconfig;
+			if ($thisconfig->{'defaultvlibdef'}) {
+				push @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled, $thisconfig;
+			} else {
+				push @virtuallibrariesconfiglistsortedDisabled, $thisconfig;
+			}
 		}
 	}
-	@virtuallibrariesconfiglistsorted = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsorted;
-	@virtuallibrariesconfiglistsortedDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDisabled;
-	push (@virtuallibrariesconfiglistsorted, @virtuallibrariesconfiglistsortedDisabled);
+	@virtuallibrariesconfiglistsortedDefaultVLIBs = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDefaultVLIBs if scalar @virtuallibrariesconfiglistsortedDefaultVLIBs > 0;
+
+	@virtuallibrariesconfiglistsorted = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsorted if scalar @virtuallibrariesconfiglistsorted > 0;
+
+	@virtuallibrariesconfiglistsortedDefaultVLIBsDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled if scalar @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled > 0;
+
+	@virtuallibrariesconfiglistsortedDisabled = sort {lc($a->{browsemenu_name}) cmp lc($b->{browsemenu_name})} @virtuallibrariesconfiglistsortedDisabled if scalar @virtuallibrariesconfiglistsortedDefaultVLIBs > 0;
+
+	my @pagevirtuallibrariesconfiglistsorted = (@virtuallibrariesconfiglistsortedDefaultVLIBs, @virtuallibrariesconfiglistsorted, @virtuallibrariesconfiglistsortedDefaultVLIBsDisabled, @virtuallibrariesconfiglistsortedDisabled);
 
 	# add empty row
-	if ((scalar @virtuallibrariesconfiglistsorted + 1) < $maxItemNum) {
-		push(@virtuallibrariesconfiglistsorted, {
+	if ((scalar @pagevirtuallibrariesconfiglistsorted + 1) < $maxItemNum) {
+		push(@pagevirtuallibrariesconfiglistsorted, {
 			'enabled' => undef,
 			'sqlitedefid' => '',
 			'browsemenu_name' => '',
@@ -177,11 +199,13 @@ sub handler {
 			'browsemenu_genres' => undef,
 			'browsemenu_years' => undef,
 			'browsemenu_tracks' => undef,
+			'notuserconfigurable' => undef,
+			'defaultvlibdef' => undef
 		});
 	}
 
-	$paramRef->{virtuallibrariesmatrix} = \@virtuallibrariesconfiglistsorted;
-	$paramRef->{itemcount} = scalar @virtuallibrariesconfiglistsorted;
+	$paramRef->{virtuallibrariesmatrix} = \@pagevirtuallibrariesconfiglistsorted;
+	$paramRef->{itemcount} = scalar @pagevirtuallibrariesconfiglistsorted;
 	$log->debug('list pushed to page = '.Dumper($paramRef->{virtuallibrariesmatrix}));
 
 	$result = $class->SUPER::handler($client, $paramRef);
@@ -195,25 +219,33 @@ sub beforeRender {
 	$log->debug('VLibDefList = '.Dumper($VLibDefList));
 	my $vliblistcount = keys %{$VLibDefList};
 	$log->debug('vliblistcount = '.Dumper($vliblistcount));
-	my @sortedarray;
+	my @sortedVLarray;
 	if ($vliblistcount > 0) {
-		my @pagePLarray;
-
+		my (@pageDefaultVLArray, @pageCustomVLarray);
 		for my $thisVLIB (keys %{$VLibDefList}) {
-			my $thisVLIBLname = $VLibDefList->{$thisVLIB}->{'name'};
+			my $thisVLIBname = $VLibDefList->{$thisVLIB}->{'name'};
+			my $defaultVLib = $VLibDefList->{$thisVLIB}->{'defaultvlibdef'};
+			my $VLIBsortname = $defaultVLib ? '000000000_'.$thisVLIBname : $thisVLIBname;
 			my $thisVlibID = $VLibDefList->{$thisVLIB}->{'id'};
-			push @pagePLarray, {name => $thisVLIBLname, id => $thisVlibID};
+			if ($defaultVLib) {
+				push @pageDefaultVLArray, {'name' => $thisVLIBname, 'sortname' => $VLIBsortname, 'id' => $thisVlibID, 'defaultvlib' => $defaultVLib};
+			} else {
+				push @pageCustomVLarray, {'name' => $thisVLIBname, 'sortname' => $VLIBsortname, 'id' => $thisVlibID, 'defaultvlib' => $defaultVLib};
+			}
 		}
-		@sortedarray = sort {$a->{name} cmp $b->{name}} @pagePLarray;
-		push @sortedarray, {name => string("PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_REMOVE"), id => 'none'};
-
-		$log->debug('sorted playlists = '.Dumper(\@sortedarray));
+		if (scalar @pageCustomVLarray == 0) {
+			push @pageCustomVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'defaultvlib' => undef};
+		}
+		@sortedVLarray = (@pageDefaultVLArray, @pageCustomVLarray);
+		@sortedVLarray = sort {lc($a->{'sortname'}) cmp lc($b->{'sortname'})} @sortedVLarray;
+		$log->debug('sorted playlists = '.Dumper(\@sortedVLarray));
 	} else {
-		push @sortedarray, {name => string("PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS"), id => 'none'};
+		push @sortedVLarray, {'name' => string("PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS"), 'id' => 'none'};
 	}
-	$paramRef->{vliblistcount} = $vliblistcount;
-	$paramRef->{allvirtuallibraries} = \@sortedarray;
+	$paramRef->{'vliblistcount'} = $vliblistcount;
+	$paramRef->{'allvirtuallibraries'} = \@sortedVLarray;
 }
+
 sub trim_leadtail {
 	my ($str) = @_;
 	$str =~ s{^\s+}{};

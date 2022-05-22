@@ -3,10 +3,11 @@
 	<id>af3464f0-f941-a507-076c-a1f5115cdbd4</id>
 	<name>PLUGIN_SQLITEVIRTUALLIBRARIES</name>
 	<module>Plugins::SQLiteVirtualLibraries::Plugin</module>
-	<version>0.1.0</version>
+	<version>0.2.0</version>
 	<description>PLUGIN_SQLITEVIRTUALLIBRARIES_DESC</description>
 	<creator>AF</creator>
 	<optionsURL>plugins/SQLiteVirtualLibraries/settings/settings.html</optionsURL>
+	<homepageURL>https://github.com/AF-1/lms-sqlitevirtuallibraries</homepageURL>
 	<defaultState>enabled</defaultState>
 	<targetApplication>
 		<id>Logitech Media Server</id>

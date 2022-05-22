@@ -7,7 +7,7 @@
 <br>
 
 [% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC" %]
-	<input type="text" class="stdedit selectFolder" name="pref_sqldefdirparentfolderpath" id="sqldefdirparentfolderpath" value="[% prefs.sqldefdirparentfolderpath %]" size="40">
+	<input type="text" class="stdedit selectFolder" name="pref_sqlcustomvldefdir_parentfolderpath" id="sqlcustomvldefdir_parentfolderpath" value="[% prefs.sqlcustomvldefdir_parentfolderpath %]" size="40">
 [% END %]
 <br>
 
@@ -26,6 +26,11 @@
 			<option [% IF prefs.browsemenus_parentfoldericon == option.key %]selected='selected' [% END %]value="[% option.key %]">[% option.value | string %]</option>
 		[%- END -%]
 	</select>
+[% END %]
+<br>
+
+[% WRAPPER setting title="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_COMPIS_RANDOM_GENREEXCLUDELIST" desc="PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_COMPIS_RANDOM_GENREEXCLUDELIST_DESC" %]
+	<input type="text" class="stdedit" name="pref_compisrandom_genreexcludelist" id="compisrandom_genreexcludelist" value="[% prefs.compisrandom_genreexcludelist %]" size="60">
 [% END %]
 <br><br><br>
 
@@ -50,7 +55,6 @@
 		<th scope="col">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MISCMENUS" | string %]</th>
 	</tr>
 	<tr style="height:4px;" colspan="6"></tr>
-
 	[% FOREACH virtuallibrariesconfig = virtuallibrariesmatrix; idx = loop.count %]
 	<tr>
 		<input type="text" style="display:none;" class="stdedit" name="pref_idNum_[% idx %]" id="idNum" value="[% idx %]" size="1" readonly>
@@ -59,11 +63,25 @@
 		</td>
 		<td>
 			<select name="pref_sqlitedefid_[% idx %]" id="sqlitedefid_[% idx %]">
-				[% FOREACH library = allvirtuallibraries %]
-					<option value="[% library.id %]" [% IF virtuallibrariesconfig.sqlitedefid == library.id %]selected='selected'[% END %]>[% library.name %]</option>
+				[% IF vliblistcount > 0 %]
+					<option value=""[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_SELECT" | string %]</option>
+					<optgroup label="Built-in">
+					[% FOREACH library = allvirtuallibraries %]
+						[% IF library.defaultvlib %]<option value="[% library.id %]"[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% library.name %]</option>[% END %]
+					[% END %]
+					</optgroup>
+					<optgroup label="Custom">
+					[% FOREACH library = allvirtuallibraries %]
+						[% IF !library.defaultvlib %]<option value="[% library.id %]"[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% library.name %]</option>[% END %]
+					[% END %]
+					</optgroup>
+					<option value="none">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_REMOVE" | string %]</option>
+				[% ELSE %]
+					<option value="[% library.id %]"[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% library.name %]</option>
 				[% END %]
 			</select>
 		</td>
+		[% IF !virtuallibrariesconfig.notuserconfigurable %]
 		<td>
 			<input type="text" class="stdedit" name="pref_browsemenu_name_[% idx %]" id="browsemenu_name_[% idx %]" value="[% virtuallibrariesconfig.browsemenu_name %]" size="25" autocomplete="off">
 		</td>
@@ -91,6 +109,7 @@
 				<input name="pref_browsemenu_tracks_[% idx %]" id="browsemenu_tracks_[% idx %]" type="checkbox" [% IF virtuallibrariesconfig.browsemenu_tracks %] checked [% END %]> [% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_TRACKS" | string %]<br>
 			</div>
 		</td>
+		[% END %]
 	</tr>
 	<tr style="height:4px;" colspan="6"></tr>
 	[% END %]

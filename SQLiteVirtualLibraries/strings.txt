@@ -2,7 +2,7 @@ PLUGIN_SQLITEVIRTUALLIBRARIES
 	EN	SQLite Virtual Libraries
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_DESC
-	EN	Use custom SQLite definitions to create virtual libraries and choose from a number of basic browse menus for your virtual library.
+	EN	Use your own SQLite definition files to create virtual libraries and choose from a number of optional basic menus to browse these virtual libraries.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_LOG_DESC
 	EN	Log of plugin SQLite Virtual Libraries
@@ -14,10 +14,31 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED
 	EN	Temporarily disable <i>all</i> virtual libraries<br>and browse menus
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_VLSENABLED_DESC
-	EN	Use this to <i>temporary</i> disable <b>all</b> virtual libraries and browse menus listed here in one go. This way you won't have to disable every single one of them. Good for troubleshooting because disabling menus/virtual libraries reduces LMS start time.
+	EN	This option allows you to <i>temporarily</i> disable <b>all</b> virtual libraries listed here (and their associated browse menus) <b>at once</b>. This way you don't have to disable every single menu. Good for debugging, as disabling menus/virtual libraries reduces the LMS startup time.
 
-PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_PREDEFINED
-	EN	Predefined browse menus
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH
+	EN	<u>Parent</u> folder path for folder <wbr>with&nbsp;virtual&nbsp;library&nbsp;SQLite&nbsp;definitions
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC
+	EN	Set the <b>parent</b> folder for the folder where you'll store your files with the SQLite virtual library definitions. The user running LMS must have read, write and execute (755) permissions for the parent folder.
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_SELECT
+	EN	** Select a definition file: **
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_BUILTIN
+	EN	Built-in
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_CUSTOM
+	EN	Custom/user-provided
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_REMOVE
+	EN	Remove
+
+PLUGIN_SVL_MENUNAME_COMPISRANDOM
+	EN	Compilations Random
+
+PLUGIN_SVL_MENUNAME_COMPISBYGENRE
+	EN	Compilations by Genre
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_TABLECOL_OPTIONAL
 	EN	Optional
@@ -88,23 +109,23 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_TRACKS
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS
 	EN	No virtual library definitions found
 
-PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_REMOVE
-	EN	Remove
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT
+	EN	None
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME
-	EN	Name of home menu item<br>for browse menus
+	EN	Name of home menu item<br>for collected browse menus
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME_DESC
-	EN	Sets the name of the home menu item/folder that contains the menus you've enabled in the <b>Browse Menus</b> settings section.
+	EN	Set the name of the SVL home menu folder that contains browse menus of your virtual libraries.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON
-	EN	Icon of home menu item<br>for browse menus
+	EN	Icon of home menu folder/item<br>for collected browse menus
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_DESC
-	EN	Choose a different icon for the home menu item (parent folder) that contains the menus you've enabled in the <b>Browse Menus</b> settings section.
+	EN	Select a different icon for the home menu item/folder that contains the collected browse menus.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_PLAYLISTS
-	EN	Playlists icon
+	EN	Playlist icon
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_MUSIC
 	EN	Music icon
@@ -112,11 +133,11 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_MUSIC
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON_FOLDER
 	EN	Folder icon
 
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_COMPIS_RANDOM_GENREEXCLUDELIST
+	EN	Exclude genres from the<br><i>Compilations Random</i> menu
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_COMPIS_RANDOM_GENREEXCLUDELIST_DESC
+	EN	Enter a <b><u>double</u> semi-colon separated list</b> of genres you want to exclude from the <b>Compilations Random</b> menu. The following special characters are not valid in genre names: []^{}$@<>"#%?*:/|\<br><br>Compilations with tracks of different genres will still be listed as long as they contain tracks with genres that have not been excluded.
+
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT
-	EN	Use your own SQLite definition to create virtual libraries and choose from a number of basic menus to browse these virtual libraries.</b><br><br><b>Notes:</b><br><br>- <b>The more virtual libraries you add and the more tracks they contain the more time LMS will need to start or to rebuild your virtual libraries.</b><br>- You <b>don't have to</b> use <i>browse menus</i>. You can just create virtual libraries / library views <b>without</b> any menus.<br>- To <b>delete</b> a virtual library and its menus just <i>select <b>remove</b> as SQLite definition</i> and press <i>apply</i></b>. Or you could just <b>disable</b> them and keep them for later use by unchecking the <i>Enabled</i> box.<br>- Valid <b>menu names</b> can't include special characters like <b>^{}$@<>"#%?*:/|\</b><br>- Your SQLite definition should have a virtual library name and a SQLite statement.<br>- Put your SQLite definitions (file extension: <b>.sql.xml</b>) in the folder named <b>SVLS-VirtualLibrary-definitions</b> which is created in the LMS playlist folder by default. You can change its locations by selecting a different <b>parent</b> folder above.<br><br>Here's an example of a SQLite definition for a virtual library that includes all genres with 'Classical' in their genre names:<br><br>-- VirtualLibraryName: All Classical Genres<br>insert or ignore into library_track (library, track)<br>select '%s', tracks.id from tracks<br>&nbsp;&nbsp;left join genre_track on genre_track.track = tracks.id<br>&nbsp;&nbsp;join genres on genres.id = genre_track.genre<br>&nbsp;&nbsp;where<br>&nbsp;&nbsp;&nbsp;&nbsp;genres.name like '%%Classical%%'<br>&nbsp;&nbsp;&nbsp;&nbsp;and tracks.audio = 1<br>&nbsp;&nbsp;group by tracks.id<br><br><br>
-
-PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH
-	EN	<u>Parent</u> folder path for folder <wbr>with&nbsp;virtual&nbsp;library&nbsp;SQLite&nbsp;definitions
-
-PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC
-	EN	Choose a location for the folder where you put your files with the SQLite virtual library definitions. If changing it gives you problems confirm that you've moved your SQLite definition files to the <b>new</b> folder and maybe try a LMS restart.
+	EN	<b>Notes:</b><br><br>- <b>The more virtual libraries you add and the more tracks they contain, the more time LMS will need to start or to rebuild your virtual libraries.</b><br>- You <b>don't have to</b> use <i>browse menus</i>. You can just create virtual libraries / library views <b>without</b> any menus.<br>- To <b>delete</b> a virtual library and its menus just <i>select <b>Remove</b> as SQLite definition</i> and press <i>Apply</i></b>. Or you could just <b>disable</b> them and keep them for later use by unchecking the <i>Enabled</i> box.<br>- Valid <b>menu names</b> can't include special characters like <b>^{}$@<>"#%?*:/|\</b><br>- The list is first sorted by enabled/disabled, then by built-in/custom.<br>- Some <b>built-in</b> virtual library definitions and their browse menus are not user-configurable (e.g. <i>Compilations Random</i> and <i>Compilations by Genre</i>).<br><br>Read <a href="https://github.com/AF-1/lms-sqlitevirtuallibraries/wiki/SVL-vlibdef-format"><b>this wiki page</b></a> for more detailed information about the correct format of SVL virtual library definition files (incl. how to add browse menus to the home menu).<br><br>

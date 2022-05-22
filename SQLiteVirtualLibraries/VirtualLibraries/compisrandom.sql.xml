@@ -1,0 +1,17 @@
+-- VirtualLibraryName: Compilations Random
+-- VirtualLibraryHomeMenu: yes
+-- NotUserConfigurable
+insert or ignore into library_track (library, track)
+select '%s', tracks.id from tracks, albums
+left join comments comments on comments.track = tracks.id
+where albums.id = tracks.album
+and albums.compilation = 1
+and tracks.audio = 1
+and not exists (select * from comments
+				where comments.track = tracks.id
+				and comments.value like '%%EoJ%%')
+and not exists (select * from genre_track, genres
+				where genre_track.track = tracks.id
+				and genre_track.genre = genres.id
+				and genres.name in ($genreexcludelist))
+group by tracks.id
