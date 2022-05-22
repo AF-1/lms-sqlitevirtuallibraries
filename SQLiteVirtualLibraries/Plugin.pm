@@ -132,7 +132,7 @@ sub initPrefs {
 	$prefs->setChange(sub {
 			$log->debug('VL config changed. Reinitializing VLs + menus.');
 			initVirtualLibrariesDelayed();
-		}, 'virtuallibrariesmatrix');
+		}, 'virtuallibrariesmatrix', 'vlstempdisabled');
 	$prefs->setChange(sub {
 			$log->debug('SVL parent folder name or icon changed. Reinitializing collected VL menus.');
 			initCollectedVLMenus();
