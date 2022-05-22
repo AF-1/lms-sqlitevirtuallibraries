@@ -3,13 +3,13 @@
 		<title lang="EN">SQLite Virtual Libraries Repo (AF1)</title>
 	</details>
 	<plugins>
-		<plugin name="SQLiteVirtualLibraries" version="0.2.1" minTarget="7.9" maxTarget="*">
+		<plugin name="SQLiteVirtualLibraries" version="0.2.2" minTarget="7.9" maxTarget="*">
 			<title lang="EN">SQLite Virtual Libraries</title>
 			<desc lang="EN">Use your own SQLite definition files to create virtual libraries and choose from a number of optional basic menus to browse these virtual libraries. More information on the github page.</desc>
-			<url>https://github.com/AF-1/lms-sqlitevirtuallibraries/releases/download/0.2.1/lms-sqlitevirtuallibraries-0.2.1.zip</url>
+			<url>https://github.com/AF-1/lms-sqlitevirtuallibraries/releases/download/0.2.2/lms-sqlitevirtuallibraries-0.2.2.zip</url>
 			<creator>AF</creator>
 			<link>https://github.com/AF-1/lms-sqlitevirtuallibraries</link>
-			<sha>98d48204b93108d204d0f4301abd94f4f791a203</sha>
+			<sha>995517f8a3c99eb1c80e06a5220b53244d245c99</sha>
 		</plugin>
 	</plugins>
 </extensions>
