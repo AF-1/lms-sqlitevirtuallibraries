@@ -2,7 +2,7 @@ PLUGIN_SQLITEVIRTUALLIBRARIES
 	EN	SQLite Virtual Libraries
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_DESC
-	EN	Use your own SQLite definition files to create virtual libraries and choose from a number of optional basic menus to browse these virtual libraries.
+	EN	Create your own virtual libraries using files with an SQLite statement and create browse menus for any LMS virtual library, incl. those not created with SQLVL.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_LOG_DESC
 	EN	Log of plugin SQLite Virtual Libraries
@@ -23,7 +23,7 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_PARENTFOLDERPATH_DESC
 	EN	Set the <b>parent</b> folder for the folder where you'll store your files with the SQLite virtual library definitions. The user running LMS must have read, write and execute (755) permissions for the parent folder.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_SELECT
-	EN	** Select a definition file: **
+	EN	** Select a virtual library (definition): **
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_BUILTIN
 	EN	Built-in
@@ -31,13 +31,16 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_BUILTIN
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_CUSTOM
 	EN	Custom/user-provided
 
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_EXTERNAL
+	EN	External Virtual Libraries
+
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_REMOVE
 	EN	Remove
 
-PLUGIN_SVL_MENUNAME_COMPISRANDOM
+PLUGIN_SQLVL_MENUNAME_COMPISRANDOM
 	EN	Compilations Random
 
-PLUGIN_SVL_MENUNAME_COMPISBYGENRE
+PLUGIN_SQLVL_MENUNAME_COMPISBYGENRE
 	EN	Compilations by Genre
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_TABLECOL_OPTIONAL
@@ -47,7 +50,13 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_ENABLED
 	EN	Enabled
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_SQLITEDEF
-	EN	SQLite definition
+	EN	Virtual Library
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_HOMEMENU
+	EN	Home Menu
+
+PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_MENUWEIGHT
+	EN	Home Menu Weight
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_DISPLAYSTRING
 	EN	Menu Name
@@ -100,9 +109,6 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_GENRES
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_YEARS
 	EN	Years
 
-PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_MENUDISPLAYNAME_YEARS
-	EN	Years
-
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_TRACKS
 	EN	Tracks
 
@@ -116,7 +122,7 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME
 	EN	Name of home menu item<br>for collected browse menus
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERNAME_DESC
-	EN	Set the name of the SVL home menu folder that contains browse menus of your virtual libraries.
+	EN	Set the name of the SQLVL home menu folder that contains browse menus of your virtual libraries.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSMENUS_PARENTFOLDERICON
 	EN	Icon of home menu folder/item<br>for collected browse menus
@@ -140,4 +146,4 @@ PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_COMPIS_RANDOM_GENREEXCLUDELIST_DESC
 	EN	Enter a <b><u>double</u> semi-colon separated list</b> of genres you want to exclude from the <b>Compilations Random</b> menu. The following special characters are not valid in genre names: []^{}$@<>"#%?*:/|\<br><br>Compilations with tracks of different genres will still be listed as long as they contain tracks with genres that have not been excluded.
 
 PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT
-	EN	<b>Notes:</b><br><br>- <b>The more virtual libraries you add and the more tracks they contain, the more time LMS will need to start or to rebuild your virtual libraries.</b><br>- You <b>don't have to</b> use <i>browse menus</i>. You can just create virtual libraries / library views <b>without</b> any menus.<br>- To <b>delete</b> a virtual library and its menus just <i>select <b>Remove</b> as SQLite definition</i> and press <i>Apply</i></b>. Or you could just <b>disable</b> them and keep them for later use by unchecking the <i>Enabled</i> box.<br>- Valid <b>menu names</b> can't include special characters like <b>^{}$@<>"#%?*:/|\</b><br>- The list is first sorted by enabled/disabled, then by built-in/custom.<br>- Some <b>built-in</b> virtual library definitions and their browse menus are not user-configurable (e.g. <i>Compilations Random</i> and <i>Compilations by Genre</i>).<br><br>Read <a href="https://github.com/AF-1/lms-sqlitevirtuallibraries/wiki/SVL-vlibdef-format"><b>this wiki page</b></a> for more detailed information about the correct format of SVL virtual library definition files (incl. how to add browse menus to the home menu).<br><br>
+	EN	<b>With this plugin you can:</b><br>- <b>create your own virtual libraries</b> by placing files <b>with an SQLite statement</b> in the <b>SQLVL-VirtualLibrary-definitions</b> folder and<br>- <b>create browse menus</b> for <b>any</b> LMS virtual library, incl. those not created with SQLVL (listed under <i>External Virtual Libraries</i>).<br><br><b>Notes:</b><br><br>- The time LMS takes to start or to refresh virtual libraries most likely increases with the number of virtual libraries enabled.<br>- You <b>don't have to</b> use <i>browse menus</i>. You can just create virtual libraries / library views <b>without</b> any menus.<br>- To <b>delete</b> a virtual library and its menus just <i>select <b>Remove</b> as SQLite definition</i> and press <i>Apply</i></b>. Or you could just <b>disable</b> them and keep them for later use by unchecking the <i>Enabled</i> box.<br>- Valid <b>menu names</b> can't include special characters like <b>^{}$@<>"#%?*:/|\</b><br>- Check the <b>Home Menu</b> box to have your browse menus displayed in the home menu (top level). Otherwise your browse menus will be collected in the SQLVL folder so they won't clutter the home menu.<br>- The <b>Home Menu Weights</b> field expects a number (integer) that determines the position in the home menu. The higher the number, the further down the home menu your browse menus are displayed. <b>Collected</b> browse menus (in the SQLVL folder) are sorted alphabetically. Menu weights have no effect there.<br>- Some <b>built-in</b> virtual library definitions and their browse menus are not user-configurable (e.g. <i>Compilations Random</i> and <i>Compilations by Genre</i>).<br><br><a href="https://github.com/AF-1/lms-sqlitevirtuallibraries/wiki/SQLVL-virtual-library-definition-format"><b>More information</b></a> about the SQLVL virtual library definition <i>format</i>.<br><br>

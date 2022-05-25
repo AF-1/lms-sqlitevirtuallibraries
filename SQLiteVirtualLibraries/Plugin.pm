@@ -70,7 +70,7 @@ sub initPlugin {
 sub initPrefs {
 	$prefs->init({
 		sqlcustomvldefdir_parentfolderpath => $serverPrefs->get('playlistdir'),
-		browsemenus_parentfoldername => 'My SVL Menus',
+		browsemenus_parentfoldername => 'My SQLVL Menus',
 		browsemenus_parentfoldericon => 1,
 		compisrandom_genreexcludelist => 'Classical;;Classical - Opera;;Classical - BR;;Soundtrack - TV & Movie Themes',
 		pluginvlibdeffolder => sub {
@@ -86,7 +86,7 @@ sub initPrefs {
 		},
 		sqlcustomvldefdir => sub {
 			my $sqlcustomvldefdir_parentfolderpath = $prefs->get('sqlcustomvldefdir_parentfolderpath') || $serverPrefs->get('playlistdir');
-			my $sqlcustomvldefdir = $sqlcustomvldefdir_parentfolderpath.'/SVL-VirtualLibrary-definitions';
+			my $sqlcustomvldefdir = catfile($sqlcustomvldefdir_parentfolderpath, 'SQLVL-VirtualLibrary-definitions');
 			eval {
 				mkdir($sqlcustomvldefdir, 0755) unless (-d $sqlcustomvldefdir);
 				chdir($sqlcustomvldefdir);
@@ -100,7 +100,7 @@ sub initPrefs {
 
 	$prefs->setValidate(sub {
 		return if (!$_[1] || !(-d $_[1]) || (main::ISWINDOWS && !(-d Win32::GetANSIPathName($_[1]))) || !(-d Slim::Utils::Unicode::encode_locale($_[1])));
-		my $sqlcustomvldefdir = $_[1].'/SVL-VirtualLibrary-definitions';
+		my $sqlcustomvldefdir = catfile($_[1], 'SQLVL-VirtualLibrary-definitions');
 		eval {
 			mkdir($sqlcustomvldefdir, 0755) unless (-d $sqlcustomvldefdir);
 			chdir($sqlcustomvldefdir);
@@ -134,13 +134,13 @@ sub initPrefs {
 			initVirtualLibrariesDelayed();
 		}, 'virtuallibrariesmatrix', 'vlstempdisabled');
 	$prefs->setChange(sub {
-			$log->debug('SVL parent folder name or icon changed. Reinitializing collected VL menus.');
+			$log->debug('SQLVL parent folder name or icon changed. Reinitializing collected VL menus.');
 			initCollectedVLMenus();
 		}, 'browsemenus_parentfoldername', 'browsemenus_parentfoldericon');
 	$prefs->setChange(sub {
 			$log->debug('compisrandom_genreexcludelist changed.');
-			Slim::Music::VirtualLibraries->unregisterLibrary('PLUGIN_SVL_VLID_COMPISRANDOM');
-			Slim::Menu::BrowseLibrary->deregisterNode('PLUGIN_SVL_MENUID_COMPIS_RANDOM');
+			Slim::Music::VirtualLibraries->unregisterLibrary('PLUGIN_SQLVL_VLID_COMPISRANDOM');
+			Slim::Menu::BrowseLibrary->deregisterNode('PLUGIN_SQLVL_MENUID_COMPIS_RANDOM');
 			initVirtualLibrariesDelayed();
 		}, 'compisrandom_genreexcludelist');
 }
@@ -154,60 +154,78 @@ sub postinitPlugin {
 sub initVirtualLibraries {
 	$log->debug('Start initializing VLs.');
 
-	# deregister all SVL menus
-	$log->debug('Deregistering SVL menus.');
+	# deregister all SQLVL menus
+	$log->debug('Deregistering SQLVL menus.');
 	deregAllMenus();
 
-	## check if VLs are globally disabled
+	my $LMS_virtuallibraries = Slim::Music::VirtualLibraries->getLibraries();
+	$log->debug('Found these registered LMS virtual libraries: '.Dumper($LMS_virtuallibraries));
+
+	## check if VLs + VL menus are globally disabled
 	if (defined ($prefs->get('vlstempdisabled'))) {
 		# unregister VLs
-		$log->debug('VLs globally disabled. Unregistering SVL VLs.');
-		my $libraries = Slim::Music::VirtualLibraries->getLibraries();
-		foreach my $thisVLrealID (keys %{$libraries}) {
-			my $thisVLID = $libraries->{$thisVLrealID}->{'id'};
+		$log->debug('VLs globally disabled. Unregistering SQLVL VLs.');
+		foreach my $thisVLrealID (keys %{$LMS_virtuallibraries}) {
+			my $thisVLID = $LMS_virtuallibraries->{$thisVLrealID}->{'id'};
 			$log->debug('VLID: '.$thisVLID.' - RealID: '.$thisVLrealID);
-			if (starts_with($thisVLID, 'PLUGIN_SVL_VLID_') == 0) {
+			if (starts_with($thisVLID, 'PLUGIN_SQLVL_VLID_') == 0) {
 				Slim::Music::VirtualLibraries->unregisterLibrary($thisVLrealID);
 			}
 		}
 		return;
 	}
 
-	## update list of available virtual library SQLite definitions
-	getVirtualLibraryDefinitions();
-
 	my $started = time();
 	my $virtuallibrariesmatrix = $prefs->get('virtuallibrariesmatrix');
 	$log->debug('virtuallibrariesmatrix = '.Dumper($virtuallibrariesmatrix));
 
+	## update list of available virtual library SQLite definitions
+	getVirtualLibraryDefinitions();
+
+	# delete configs in virtuallibrariesmatrix referring to (external = not SQLVL) virtual libraries that no longer exist
+	foreach my $virtuallibrariesconfig (keys %{$virtuallibrariesmatrix}) {
+		my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
+		next if $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} != 3;
+		my $configIsValid = 0;
+		foreach my $thisVLrealID (keys %{$LMS_virtuallibraries}) {
+			my $thisVLID = $LMS_virtuallibraries->{$thisVLrealID}->{'id'};
+			$log->debug('VLID: '.$thisVLID.' - RealID: '.$thisVLrealID.' -- sqlitedefid = '.$sqlitedefid);
+			if ($sqlitedefid eq $thisVLID) {
+				$log->debug("Config '$sqlitedefid' is valid. Source VL exists.");
+				$configIsValid = 1;
+				last;
+			}
+		}
+		next if $configIsValid;
+		$log->debug("Deleting virtual matrix config with ID '$sqlitedefid' because it's based on external (= not SQLVL) virtual library that no longer exists.");
+		delete(%{$virtuallibrariesmatrix}{$virtuallibrariesconfig});
+		$prefs->set('virtuallibrariesmatrix', $virtuallibrariesmatrix);
+	}
+
 	### create/register VLs
 
 	if (keys %{$virtuallibrariesmatrix} > 0) {
-		my $libraries = Slim::Music::VirtualLibraries->getLibraries();
-		$log->debug('Found these virtual libraries: '.Dumper($libraries));
-
 		# delete configs in virtuallibrariesmatrix referring to SQLite definition files that no longer exist
 		foreach my $virtuallibrariesconfig (keys %{$virtuallibrariesmatrix}) {
 			my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
-			my $VLID = $VLibDefinitions->{$sqlitedefid}->{'vlid'};
-			next if $VLID;
-			$log->info("Deleting virtual matrix config with ID '$sqlitedefid' because its SQLite definition file no longer exists.");
+			next if ($VLibDefinitions->{$sqlitedefid} || $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} == 3);
+			$log->debug("Deleting virtual matrix config with ID '$sqlitedefid' because its SQLite definition file no longer exists.");
 			delete(%{$virtuallibrariesmatrix}{$virtuallibrariesconfig});
 			$prefs->set('virtuallibrariesmatrix', $virtuallibrariesmatrix);
 		}
 
-		# unregister SVL virtual libraries that are no longer part of the virtuallibrariesmatrix
-		foreach my $thisVLrealID (keys %{$libraries}) {
-			my $thisVLID = $libraries->{$thisVLrealID}->{'id'};
+		# unregister SQLVL virtual libraries that are no longer part of the virtuallibrariesmatrix
+		foreach my $thisVLrealID (keys %{$LMS_virtuallibraries}) {
+			my $thisVLID = $LMS_virtuallibraries->{$thisVLrealID}->{'id'};
 			$log->debug('VLID: '.$thisVLID.' - RealID: '.$thisVLrealID);
-			if (starts_with($thisVLID, 'PLUGIN_SVL_VLID_') == 0) {
+			if (starts_with($thisVLID, 'PLUGIN_SQLVL_VLID_') == 0) {
 				my $VLisinBrowseMenusConfigMatrix = 0;
 				foreach my $virtuallibrariesconfig (sort {lc($virtuallibrariesmatrix->{$a}->{browsemenu_name}) cmp lc($virtuallibrariesmatrix->{$b}->{browsemenu_name})} keys %{$virtuallibrariesmatrix}) {
 					next if (!defined ($virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'enabled'}));
 					my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
 					my $VLID;
 					if (defined $sqlitedefid && ($sqlitedefid ne '')) {
-						$VLID = 'PLUGIN_SVL_VLID_'.trim_all(uc($sqlitedefid));
+						$VLID = 'PLUGIN_SQLVL_VLID_'.trim_all(uc($sqlitedefid));
 					}
 					if ($VLID eq $thisVLID) {
 							$log->debug('VL \''.$VLID.'\' already exists and is still part of the virtuallibrariesmatrix. No need to unregister it.');
@@ -224,12 +242,12 @@ sub initVirtualLibraries {
 		# create/register VLs that don't exist yet
 		foreach my $virtuallibrariesconfig (sort {lc($virtuallibrariesmatrix->{$a}->{browsemenu_name}) cmp lc($virtuallibrariesmatrix->{$b}->{browsemenu_name})} keys %{$virtuallibrariesmatrix}) {
 			my $enabled = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'enabled'};
-			next if (!defined $enabled);
+			next if (!defined $enabled || $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} == 3);
 			my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
 			$log->debug('sqlitedefid = '.$sqlitedefid);
 			my $browsemenu_name = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'browsemenu_name'};
 			$log->debug('browsemenu_name = '.$browsemenu_name);
-			my $VLID = 'PLUGIN_SVL_VLID_'.trim_all(uc($sqlitedefid));;
+			my $VLID = 'PLUGIN_SQLVL_VLID_'.trim_all(uc($sqlitedefid));;
 			$log->debug('VLID = '.$VLID);
 			my $sql;
 			if ($sqlitedefid eq 'compisrandom') {
@@ -303,7 +321,7 @@ sub initHomeVLMenus {
 		### get enabled browse menus for home menu
 		my (@enabledWithHomeBrowseMenus, @enabledNotUserConfigurable);
 		foreach my $thisconfig (keys %{$virtuallibrariesmatrix}) {
-			if (defined($virtuallibrariesmatrix->{$thisconfig}->{'enabled'}) && defined($VLibDefinitions->{$virtuallibrariesmatrix->{$thisconfig}->{'sqlitedefid'}}->{'homemenu'})) {
+			if ($virtuallibrariesmatrix->{$thisconfig}->{'enabled'} && $virtuallibrariesmatrix->{$thisconfig}->{'homemenu'}) {
 				if (defined($VLibDefinitions->{$virtuallibrariesmatrix->{$thisconfig}->{'sqlitedefid'}}->{'notuserconfigurable'})) {
 					push @enabledNotUserConfigurable, $thisconfig;
 				} elsif (($virtuallibrariesmatrix->{$thisconfig}->{'numberofenabledbrowsemenus'}+0) > 0) {
@@ -322,12 +340,17 @@ sub initHomeVLMenus {
 				my $enabled = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'enabled'};
 				next if (!$enabled);
 				my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
-				my $VLID = $VLibDefinitions->{$sqlitedefid}->{'vlid'};
-				$log->debug('VLID = '.$VLID);
+				my $VLID;
+				if ($virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} == 3) {
+					$VLID = $sqlitedefid;
+				} else {
+					$VLID = $VLibDefinitions->{$sqlitedefid}->{'vlid'};
+				}
+				$log->debug('VLID = '.Dumper($VLID));
 				my $library_id = Slim::Music::VirtualLibraries->getRealId($VLID);
 				next if (!$library_id);
-				next if !($VLibDefinitions->{$virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'}}->{'homemenu'});
-				my $menuWeight = $VLibDefinitions->{$virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'}}->{'homemenuweight'};
+				next if !($virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'homemenu'});
+				my $menuWeight = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'menuweight'};
 
 				if (defined $enabled && defined $library_id) {
 					my $browsemenu_name = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'browsemenu_name'};
@@ -612,16 +635,16 @@ sub initHomeVLMenus {
 				if ($sqlitedefid eq 'compisrandom') {
 					push @notUserConfigurableHomeBrowseMenus,{
 						type => 'link',
-						name=> 'PLUGIN_SVL_MENUNAME_COMPISRANDOM',
+						name=> 'PLUGIN_SQLVL_MENUNAME_COMPISRANDOM',
 						params=>{library_id => $library_id,
 								mode => 'randomalbums',
 								sort => 'random'},
 						feed => \&Slim::Menu::BrowseLibrary::_albums,
 						icon => 'plugins/SQLiteVirtualLibraries/html/images/randomcompis_svg.png',
 						jiveIcon => 'plugins/SQLiteVirtualLibraries/html/images/randomcompis_svg.png',
-						homeMenuText => 'PLUGIN_SVL_MENUNAME_COMPISRANDOM',
+						homeMenuText => 'PLUGIN_SQLVL_MENUNAME_COMPISRANDOM',
 						condition => \&Slim::Menu::BrowseLibrary::isEnabledNode,
-						id => 'PLUGIN_SVL_MENUID_COMPIS_RANDOM',
+						id => 'PLUGIN_SQLVL_MENUID_COMPIS_RANDOM',
 						weight => 25,
 						cache => 0,
 					};
@@ -631,16 +654,16 @@ sub initHomeVLMenus {
 				if ($sqlitedefid eq 'compisbygenre') {
 					push @notUserConfigurableHomeBrowseMenus,{
 						type => 'link',
-						name => 'PLUGIN_SVL_MENUNAME_COMPISBYGENRE',
+						name => 'PLUGIN_SQLVL_MENUNAME_COMPISBYGENRE',
 						params => {artist_id => Slim::Schema->variousArtistsObject->id,
 									mode => 'genres',
 									sort => 'title'},
 						feed => \&Slim::Menu::BrowseLibrary::_genres,
 						icon => 'plugins/SQLiteVirtualLibraries/html/images/compisbygenre_svg.png',
 						jiveIcon => 'plugins/SQLiteVirtualLibraries/html/images/compisbygenre_svg.png',
-						homeMenuText => 'PLUGIN_SVL_MENUNAME_COMPISBYGENRE',
+						homeMenuText => 'PLUGIN_SQLVL_MENUNAME_COMPISBYGENRE',
 						condition => \&Slim::Menu::BrowseLibrary::isEnabledNode,
-						id => 'PLUGIN_SVL_MENUID_COMPIS_BYGENRE',
+						id => 'PLUGIN_SQLVL_MENUID_COMPIS_BYGENRE',
 						weight => 26,
 						cache => 1,
 					};
@@ -665,7 +688,7 @@ sub initCollectedVLMenus {
 	$log->debug('Started initializing collected VL menus.');
 	my $started = time();
 	my $virtuallibrariesmatrix = $prefs->get('virtuallibrariesmatrix');
-	my $browsemenus_parentfolderID = 'PLUGIN_SVL_SVLPARENTFOLDER';
+	my $browsemenus_parentfolderID = 'PLUGIN_SQLVL_SQLVLPARENTFOLDER';
 	my $browsemenus_parentfoldername = $prefs->get('browsemenus_parentfoldername');
 
 	# deregister parent folder menu
@@ -673,7 +696,7 @@ sub initCollectedVLMenus {
 	my $nameToken = registerCustomString($browsemenus_parentfoldername);
 
 	if (keys %{$virtuallibrariesmatrix} > 0) {
-		### get enabled browse menus for SVL parent folder
+		### get enabled browse menus for SQLVL parent folder
 		my @enabledWithCollectedBrowseMenus;
 		foreach my $thisconfig (keys %{$virtuallibrariesmatrix}) {
 			if (defined($virtuallibrariesmatrix->{$thisconfig}->{'enabled'}) && ($virtuallibrariesmatrix->{$thisconfig}->{'numberofenabledbrowsemenus'}+0) > 0) {
@@ -682,9 +705,9 @@ sub initCollectedVLMenus {
 				}
 			}
 		}
-		$log->debug('enabled configs (collected in SVL parent folder) = '.scalar(@enabledWithCollectedBrowseMenus));
+		$log->debug('enabled configs (collected in SQLVL parent folder) = '.scalar(@enabledWithCollectedBrowseMenus));
 
-		### create browse menus collected in SVL parent folder
+		### create browse menus collected in SQLVL parent folder
 		if (scalar @enabledWithCollectedBrowseMenus > 0) {
 			my $browsemenus_parentfoldericon = $prefs->get('browsemenus_parentfoldericon');
 			my $iconPath;
@@ -705,12 +728,16 @@ sub initCollectedVLMenus {
 				feed => sub {
 					my ($client, $cb, $args, $pt) = @_;
 					my @collectedBrowseMenus = ();
-
 					foreach my $virtuallibrariesconfig (sort @enabledWithCollectedBrowseMenus) {
 						my $enabled = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'enabled'};
 						next if (!$enabled);
 						my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
-						my $VLID = $VLibDefinitions->{$sqlitedefid}->{'vlid'};
+						my $VLID;
+						if ($virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} == 3) {
+							$VLID = $sqlitedefid;
+						} else {
+							$VLID = $VLibDefinitions->{$sqlitedefid}->{'vlid'};
+						}
 						$log->debug('VLID = '.$VLID);
 						my $library_id = Slim::Music::VirtualLibraries->getRealId($VLID);
 						next if (!$library_id);
@@ -1027,7 +1054,7 @@ sub deregAllMenus {
 	$log->debug('node list = '.Dumper($nodeList));
 
 	foreach my $homeMenuItem (@{$nodeList}) {
-		if (starts_with($homeMenuItem->{'name'}, 'PLUGIN_SVL_') == 0) {
+		if (starts_with($homeMenuItem->{'name'}, 'PLUGIN_SQLVL_') == 0) {
 			$log->debug('Deregistering home menu item: '.Dumper($homeMenuItem->{'id'}));
 			Slim::Menu::BrowseLibrary->deregisterNode($homeMenuItem->{'id'});
 		}
@@ -1077,11 +1104,8 @@ sub getVirtualLibraryDefinitions {
 					}
 
 					my $parsedContent = parseContent($client, $item, $content);
-					if ($localDefDir eq $pluginVLibDefFolder) {
-						$parsedContent->{'defaultvlibdef'} = 1;
-					} else {
-						$parsedContent->{'customvlibdef'} = 1;
-					}
+					# source of virtual library: 1 = built-in, 2 = custom/user-provided, 3 = external
+					$parsedContent->{'vlibsource'} = $localDefDir eq $pluginVLibDefFolder ? 1 : 2;
 					$VLibDefinitions->{$parsedContent->{'id'}} = $parsedContent;
 				}
 			}
@@ -1096,14 +1120,11 @@ sub parseContent {
 	my $content = shift;
 	my $items = shift;
 
-	my $errorMsg = undef;
 	if ($content) {
 		decode_entities($content);
 
 		my @VLibDataArray = split(/[\n\r]+/, $content);
 		my $name = undef;
-		my $isHomeMenu = undef;
-		my $HomeMenuWeight = undef;
 		my $notUserConfigurable = undef;
 		my $menuOnlyNoSQL = undef;
 		my $statement = '';
@@ -1124,26 +1145,15 @@ sub parseContent {
 			}
 			chomp $line;
 
-			my $homemenu = parseHomeMenu($line);
-			my $menuweight = parseMenuWeight($line);
 			my $notuserconfig = parseUserConfigurable($line);
 			my $menuonly =parseMenuOnly($line);
 
 			$line =~ s/\s*--.*?$//o;
 			$line =~ s/^\s*//o;
 
-			if ($homemenu) {
-				$isHomeMenu = 1;
-			}
-			if ($menuweight) {
-				$HomeMenuWeight = $menuweight;
-			}
-			if ($notuserconfig) {
-				$notUserConfigurable = 1;
-			}
-			if ($menuonly) {
-				$menuOnlyNoSQL = 1;
-			}
+			$notUserConfigurable = 1 if $notuserconfig;
+			$menuOnlyNoSQL = 1 if $menuonly;
+
 			next if $line =~ /^--/;
 			next if $line =~ /^\s*$/;
 
@@ -1160,25 +1170,20 @@ sub parseContent {
 				$statement .= $line;
 			}
 		}
-		if ($menuOnlyNoSQL) {
-			$statement = 'menuonly';
-		}
+		$statement = 'menuonly' if $menuOnlyNoSQL;
 
 		if ($name && $statement) {
-			#my $virtuallibraryid = escape($name,"^A-Za-z0-9\-_");
 			my $file = $item;
 			my $fileExtension = "\\.sql\\.xml\$";
 			$item =~ s{$fileExtension$}{};
 			$name =~ s/\'\'/\'/g;
-			my $virtuallibraryid = 'PLUGIN_SVL_VLID_'.trim_all(uc($item));
+			my $virtuallibraryid = 'PLUGIN_SQLVL_VLID_'.trim_all(uc($item));
 
 			my %virtuallibrary = (
 				'id' => $item,
 				'vlid' => $virtuallibraryid,
 				'file' => $file,
 				'name' => $name,
-				'homemenu' => $isHomeMenu,
-				'homemenuweight' => $HomeMenuWeight,
 				'notuserconfigurable' => $notUserConfigurable,
 				'sql' => Slim::Utils::Unicode::utf8decode($statement,'utf8'),
 				'fulltext' => Slim::Utils::Unicode::utf8decode($fulltext,'utf8')
@@ -1187,13 +1192,9 @@ sub parseContent {
 			return \%virtuallibrary;
 		}
 	} else {
-		if ($@) {
-			$errorMsg = "Incorrect information in virtuallibrary data: $@";
-			$log->warn("Unable to read virtuallibrary configuration:\n$@");
-		} else {
-			$errorMsg = 'Incorrect information in virtuallibrary data';
-			$log->warn('Unable to to read virtuallibrary configuration');
-		}
+		my $errorMsg = "Unable to read virtuallibrary definition '$item'";
+		$errorMsg .= ": $@" if $@;
+		$log->warn($errorMsg);
 	}
 	return undef;
 }
@@ -1210,42 +1211,6 @@ sub parseVLibName {
 		} else {
 			$log->debug("No name found in: $line");
 			$log->debug("Value: name = $name");
-			return undef;
-		}
-	}
-	return undef;
-}
-
-sub parseHomeMenu {
-	my $line = shift;
-	if ($line =~ /^\s*--\s*VirtualLibraryHomeMenu\s*[:=]\s*/) {
-		my $ishomemenu = $line;
-		$ishomemenu =~ s/^\s*--\s*VirtualLibraryHomeMenu\s*[:=]\s*//io;
-		$ishomemenu =~ s/\s+$//;
-		$ishomemenu =~ s/^\s+//;
-		if ($ishomemenu) {
-			return $ishomemenu;
-		} else {
-			$log->debug("No ishomemenu found in: $line");
-			$log->debug("Value: ishomemenu = $ishomemenu");
-			return undef;
-		}
-	}
-	return undef;
-}
-
-sub parseMenuWeight {
-	my $line = shift;
-	if ($line =~ /^\s*--\s*VirtualLibraryHomeMenuWeight\s*[:=]\s*/) {
-		my $menuweight = $line;
-		$menuweight =~ s/^\s*--\s*VirtualLibraryHomeMenuWeight\s*[:=]\s*//io;
-		$menuweight =~ s/\s+$//;
-		$menuweight =~ s/^\s+//;
-		if ($menuweight && $menuweight =~ /^-?\d+\z/ && $menuweight > 0) {
-			return $menuweight;
-		} else {
-			$log->debug("No valid menu weight found in: $menuweight");
-			$log->debug("Value: menuweight = $menuweight");
 			return undef;
 		}
 	}
@@ -1288,6 +1253,7 @@ sub parseMenuOnly {
 	return undef;
 }
 
+
 sub getVLibDefList {
 	$VLibDefinitions = {};
 	getVirtualLibraryDefinitions();
@@ -1299,7 +1265,7 @@ sub registerCustomString {
 	if (!Slim::Utils::Strings::stringExists($string)) {
 		my $token = uc(Slim::Utils::Text::ignoreCase($string, 1));
 		$token =~ s/\s/_/g;
-		$token = 'PLUGIN_SVL_BROWSEMENUS_' . $token;
+		$token = 'PLUGIN_SQLVL_BROWSEMENUS_' . $token;
 		Slim::Utils::Strings::storeExtraStrings([{
 			strings => {EN => $string},
 			token => $token,

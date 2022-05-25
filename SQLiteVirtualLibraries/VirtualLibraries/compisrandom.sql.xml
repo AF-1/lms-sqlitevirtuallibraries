@@ -1,5 +1,4 @@
 -- VirtualLibraryName: Compilations Random
--- VirtualLibraryHomeMenu: yes
 -- NotUserConfigurable
 insert or ignore into library_track (library, track)
 select '%s', tracks.id from tracks, albums
