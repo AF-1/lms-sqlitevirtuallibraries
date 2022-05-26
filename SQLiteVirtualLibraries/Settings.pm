@@ -82,7 +82,7 @@ sub handler {
 			my $homeMenu = $paramRef->{"pref_homemenu_$n"} // undef;
 			$homeMenu = 1 if $notUserConfigurableHomeMenus{$sqlitedefid};
 			my $menuWeight = $paramRef->{"pref_menuweight_$n"} // undef;
-			$menuWeight = undef if (defined $menuWeight && ($menuWeight !~ /^-?\d+\z/ || $menuWeight <= 0));
+			$menuWeight = undef if (defined $menuWeight && (!$homeMenu || $menuWeight !~ /^-?\d+\z/ || $menuWeight <= 0));
 			my $browsemenu_contributor_allartists = $paramRef->{"pref_browsemenu_contributor_allartists_$n"} // undef;
 			my $browsemenu_contributor_albumartists = $paramRef->{"pref_browsemenu_contributor_albumartists_$n"} // undef;
 			my $browsemenu_contributor_composers = $paramRef->{"pref_browsemenu_contributor_composers_$n"} // undef;

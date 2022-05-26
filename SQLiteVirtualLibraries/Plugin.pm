@@ -700,7 +700,7 @@ sub initCollectedVLMenus {
 		my @enabledWithCollectedBrowseMenus;
 		foreach my $thisconfig (keys %{$virtuallibrariesmatrix}) {
 			if (defined($virtuallibrariesmatrix->{$thisconfig}->{'enabled'}) && ($virtuallibrariesmatrix->{$thisconfig}->{'numberofenabledbrowsemenus'}+0) > 0) {
-				unless (defined($VLibDefinitions->{$virtuallibrariesmatrix->{$thisconfig}->{'sqlitedefid'}}->{'homemenu'})) {
+				unless (defined($virtuallibrariesmatrix->{$thisconfig}->{'homemenu'})) {
 					push @enabledWithCollectedBrowseMenus, $thisconfig;
 				}
 			}

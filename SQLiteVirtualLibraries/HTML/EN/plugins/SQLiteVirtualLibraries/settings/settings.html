@@ -130,7 +130,9 @@
 	[% END %]
 </table>
 <br><hr><br>
-[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT" | string %]
+<div class="help">
+	[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_BROWSEMENUS_ABOUT_TEXT" | string %]
+</div>
 
 [% PROCESS settings/footer.html %]
 <style type="text/css">
@@ -147,4 +149,5 @@
 	.list_misc {width:100px; margin-left:35%;}
 	.spacer {height:3px;}
 	.colspanoptional {border-bottom: 1px solid;}
+	.help {padding-left:20px;}
 </style>
