@@ -241,33 +241,33 @@ sub beforeRender {
 		}
 	}
 	if (scalar @pageExtVLarray == 0) {
-		push @pageExtVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'vlibsource' => undef};
+		push @pageExtVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'vlibsource' => 3};
 	}
 
 	my $VLibDefList = Plugins::SQLiteVirtualLibraries::Plugin::getVLibDefList();
 	$log->debug('VLibDefList = '.Dumper($VLibDefList));
 	my $vliblistcount = keys %{$VLibDefList};
 	$log->debug('vliblistcount = '.Dumper($vliblistcount));
-	my @sortedVLarray;
-	if ($vliblistcount > 0) {
-		my (@pageDefaultVLarray, @pageCustomVLarray);
-		for my $thisVLIB (keys %{$VLibDefList}) {
-			my $thisVLIBname = $VLibDefList->{$thisVLIB}->{'name'};
-			my $VLsource = $VLibDefList->{$thisVLIB}->{'vlibsource'};
-			my $VLIBsortname = $VLsource == 1 ? '000000000_'.$thisVLIBname : $thisVLIBname;
-			my $thisVlibID = $VLibDefList->{$thisVLIB}->{'id'};
-			push @pageDefaultVLarray, {'name' => $thisVLIBname, 'sortname' => $VLIBsortname, 'id' => $thisVlibID, 'vlibsource' => $VLsource};
-		}
-		if (scalar @pageCustomVLarray == 0) {
-			push @pageCustomVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'vlibsource' => undef};
-		}
-		@sortedVLarray = (@pageDefaultVLarray, @pageCustomVLarray, @pageExtVLarray);
-		@sortedVLarray = sort {lc($a->{'sortname'}) cmp lc($b->{'sortname'})} @sortedVLarray;
-		$log->debug('sorted playlists = '.Dumper(\@sortedVLarray));
-	} else {
-		push @sortedVLarray, {'name' => string("PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS"), 'id' => 'none'};
+	my $defaultVLcount = 0;
+	my $customVLcount = 0;
+	my @pageVLarray;
+	for my $thisVLIB (keys %{$VLibDefList}) {
+		my $thisVLIBname = $VLibDefList->{$thisVLIB}->{'name'};
+		my $VLsource = $VLibDefList->{$thisVLIB}->{'vlibsource'};
+		my $VLIBsortname = $VLsource == 1 ? '000000000_'.$thisVLIBname : $thisVLIBname;
+		$VLsource == 1 ? $defaultVLcount++ : $customVLcount++;
+		my $thisVlibID = $VLibDefList->{$thisVLIB}->{'id'};
+		push @pageVLarray, {'name' => $thisVLIBname, 'sortname' => $VLIBsortname, 'id' => $thisVlibID, 'vlibsource' => $VLsource};
 	}
-	$paramRef->{'vliblistcount'} = $vliblistcount;
+	if ($defaultVLcount == 0) {
+		push @pageExtVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'vlibsource' => 1};
+	}
+	if ($customVLcount == 0) {
+		push @pageExtVLarray, {'name' => string('PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_NOVLIBDEFS_SHORT'), 'sortname' => 'none', 'id' => 'none', 'vlibsource' => 2};
+	}
+	my @sortedVLarray = (@pageVLarray, @pageExtVLarray);
+	@sortedVLarray = sort {lc($a->{'sortname'}) cmp lc($b->{'sortname'})} @sortedVLarray;
+	$log->debug('sorted playlists = '.Dumper(\@sortedVLarray));
 	$paramRef->{'allvirtuallibraries'} = \@sortedVLarray;
 }
 

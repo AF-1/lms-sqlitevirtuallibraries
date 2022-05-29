@@ -67,7 +67,6 @@
 		</td>
 		<td>
 			<select name="pref_sqlitedefid_[% idx %]" id="sqlitedefid_[% idx %]">
-				[% IF vliblistcount > 0 %]
 					<option value=""[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_SELECT" | string %]</option>
 					<optgroup label="[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_BUILTIN" | string %]">
 					[% FOREACH library = allvirtuallibraries %]
@@ -85,9 +84,6 @@
 					[% END %]
 					</optgroup>
 					<option value="none">[% "PLUGIN_SQLITEVIRTUALLIBRARIES_SETTINGS_VLIBDEFS_REMOVE" | string %]</option>
-				[% ELSE %]
-					<option value="[% library.id %]"[% IF virtuallibrariesconfig.sqlitedefid == library.id %] selected='selected'[% END %]>[% library.name %]</option>
-				[% END %]
 			</select>
 		</td>
 		[% IF !virtuallibrariesconfig.notuserconfigurable %]

@@ -83,20 +83,9 @@ sub initPrefs {
 				}
 			}
 			return undef;
-		},
-		sqlcustomvldefdir => sub {
-			my $sqlcustomvldefdir_parentfolderpath = $prefs->get('sqlcustomvldefdir_parentfolderpath') || $serverPrefs->get('playlistdir');
-			my $sqlcustomvldefdir = catfile($sqlcustomvldefdir_parentfolderpath, 'SQLVL-VirtualLibrary-definitions');
-			eval {
-				mkdir($sqlcustomvldefdir, 0755) unless (-d $sqlcustomvldefdir);
-				chdir($sqlcustomvldefdir);
-				return $sqlcustomvldefdir;
-			} or do {
-				$log->error("Could not create or access custom vl directory in parent folder 'sqlcustomvldefdir_parentfolderpath'");
-				return undef;
-			};
 		}
 	});
+	createCustomVLdefDir();
 
 	$prefs->setValidate(sub {
 		return if (!$_[1] || !(-d $_[1]) || (main::ISWINDOWS && !(-d Win32::GetANSIPathName($_[1]))) || !(-d Slim::Utils::Unicode::encode_locale($_[1])));
@@ -1258,6 +1247,19 @@ sub getVLibDefList {
 	$VLibDefinitions = {};
 	getVirtualLibraryDefinitions();
 	return \%{$VLibDefinitions};
+}
+
+sub createCustomVLdefDir {
+	my $sqlcustomvldefdir_parentfolderpath = $prefs->get('sqlcustomvldefdir_parentfolderpath') || $serverPrefs->get('playlistdir');
+	my $sqlcustomvldefdir = catfile($sqlcustomvldefdir_parentfolderpath, 'SQLVL-VirtualLibrary-definitions');
+	eval {
+		mkdir($sqlcustomvldefdir, 0755) unless (-d $sqlcustomvldefdir);
+		chdir($sqlcustomvldefdir);
+	} or do {
+		$log->error("Could not create or access custom vl directory in parent folder '$sqlcustomvldefdir_parentfolderpath'");
+		return;
+	};
+	$prefs->set('sqlcustomvldefdir', $sqlcustomvldefdir);
 }
 
 sub registerCustomString {
