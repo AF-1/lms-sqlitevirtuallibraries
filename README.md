@@ -9,6 +9,13 @@ A plugin for [Logitech Media Server](https://github.com/Logitech/slimserver)<br>
 **For more information on how to use this plugin, see the [wiki](https://github.com/AF-1/lms-sqlitevirtuallibraries/wiki) page.**
 <br><br>
 
+## Requirements
+
+- LMS version >= 7.**9**
+- LMS database = **SQLite**
+- Perl version >= 5.**28**
+<br><br><br>
+
 ## Installation
 
 ### Using the repository URL

@@ -23,6 +23,7 @@ package Plugins::SQLiteVirtualLibraries::Plugin;
 use strict;
 use warnings;
 use utf8;
+use 5.028;
 
 use base qw(Slim::Plugin::Base);
 
