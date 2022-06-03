@@ -23,7 +23,6 @@ package Plugins::SQLiteVirtualLibraries::Plugin;
 use strict;
 use warnings;
 use utf8;
-use 5.028;
 
 use base qw(Slim::Plugin::Base);
 
@@ -188,7 +187,7 @@ sub initVirtualLibraries {
 		}
 		next if $configIsValid;
 		$log->debug("Deleting virtual matrix config with ID '$sqlitedefid' because it's based on external (= not SQLVL) virtual library that no longer exists.");
-		delete(%{$virtuallibrariesmatrix}{$virtuallibrariesconfig});
+		delete $virtuallibrariesmatrix->{$virtuallibrariesconfig};
 		$prefs->set('virtuallibrariesmatrix', $virtuallibrariesmatrix);
 	}
 
@@ -200,7 +199,7 @@ sub initVirtualLibraries {
 			my $sqlitedefid = $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'sqlitedefid'};
 			next if ($VLibDefinitions->{$sqlitedefid} || $virtuallibrariesmatrix->{$virtuallibrariesconfig}->{'vlibsource'} == 3);
 			$log->debug("Deleting virtual matrix config with ID '$sqlitedefid' because its SQLite definition file no longer exists.");
-			delete(%{$virtuallibrariesmatrix}{$virtuallibrariesconfig});
+			delete $virtuallibrariesmatrix->{$virtuallibrariesconfig};
 			$prefs->set('virtuallibrariesmatrix', $virtuallibrariesmatrix);
 		}
 
