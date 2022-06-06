@@ -3,7 +3,7 @@ SQLite Virtual Libraries
 
 A plugin for [Logitech Media Server](https://github.com/Logitech/slimserver)<br>
 
-**Create your own virtual libraries** using files with an *SQLite statement* and **create browse menus** for *any* LMS virtual library, incl. those not created with SQLVL.
+**Create your own virtual libraries** using files with an *SQLite statement* and **create browse menus**[^1] for *any* LMS virtual library, incl. those not created with SQLVL.
 <br>
 
 💡 **For more information on how to use this plugin, see the [wiki](https://github.com/AF-1/lms-sqlitevirtuallibraries/wiki) page.**
@@ -32,3 +32,4 @@ The [**strings.txt**](https://github.com/AF-1/lms-sqlitevirtuallibraries/blob/ma
 * Please leave *(multiple) blank lines* (used to visually delineate different parts) as they are.
 <br><br>
 
+[^1]: Browse menus are provided by LMS. Under certain circumstances you may see (empty) albums or artists in some menus that shouldn't be there. There's nothing I can do about it because LMS creates and provides these menus.<br>Just go down one level: click to *show all tracks* or *show all albums*.<br>In case this LMS issue ever gets resolved, I'll update this page.
